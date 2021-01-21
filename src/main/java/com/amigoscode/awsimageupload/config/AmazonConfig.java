@@ -10,8 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.AmazonS3Client;
 
 @Configuration
 public class AmazonConfig {
@@ -26,7 +27,11 @@ public class AmazonConfig {
 			e.printStackTrace();
 		}
 	
-		return AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).build();
+		AmazonS3 s3 = AmazonS3Client.builder()
+			.withRegion(Regions.US_EAST_1)
+			.withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+			.build();		
+		return s3;
 	}
 	
 	private String getKey(String keyType) throws Exception {
