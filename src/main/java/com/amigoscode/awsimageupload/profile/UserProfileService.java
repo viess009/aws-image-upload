@@ -48,12 +48,24 @@ public class UserProfileService {
 		
 		// 5. Store the image in s3 and update database (userProfileImageLink) with s3 image link
 		String path = String.format("%s/%s", BucketName.PROFILE_IMAGE.getBucketName(), user.getUserProfileId());
-		String filename = String.format("%s-%s", file.getName(), UUID.randomUUID());
+		String filename = String.format("%s-%s", file.getOriginalFilename(), UUID.randomUUID());
 		try {
 			fileStore.save(path, filename, Optional.of(metadata), file.getInputStream());
+			user.setUserProfileImageLink(filename);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
+	}
+	
+	public byte[] downloadUserProfileImage(String userProfileId) {
+		UserProfile user = getUserProfileOrThrow(userProfileId);
+		String path = String.format("%s/%s", 
+				BucketName.PROFILE_IMAGE.getBucketName(), 
+				user.getUserProfileId());
+		
+		return user.getUserProfileImageLink()
+			.map(key -> fileStore.download(path, key))
+			.orElse(new byte[0]);
 	}
 
 	private void isFileEmpty(MultipartFile file) {
